@@ -1,0 +1,17 @@
+from flask import Flask, escape, request
+from prometheus_client import Counter, Gauge, exposition
+from requests import get
+
+app = Flask(__name__)
+
+power = Gauge("power", "current power in watts (W)")
+voltage = Gauge("voltage", "current voltage (V)")
+
+
+@app.route('/')
+def server():
+    sample = get('http://192.168.1.106/current-sample').json()
+    consumption = [ch for ch in sample["channels"] if ch["type"] == "CONSUMPTION"][0]
+    power.set(consumption["p_W"])
+    voltage.set(consumption["v_V"])
+    return exposition.generate_latest()
