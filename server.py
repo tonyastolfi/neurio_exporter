@@ -14,7 +14,7 @@ fs = Gauge("filesystem", "Filesytem stats from df", ["id", "mount", "stat"])
 @app.route('/')
 @app.route('/metrics')
 def server():
-    sample = get('http://192.168.1.106/current-sample').json()
+    sample = get('http://192.168.1.109/current-sample').json()
 
     for channel in sample["channels"]:
         power.labels(type=channel["type"]).set(channel["p_W"])
@@ -25,5 +25,9 @@ def server():
         fs.labels(id=line[0], mount=line[-1], stat="size").set(line[1])
         fs.labels(id=line[0], mount=line[-1], stat="used").set(line[2])
         fs.labels(id=line[0], mount=line[-1], stat="avail").set(line[3])
+
+    response_text = exposition.generate_latest()
         
-    return exposition.generate_latest()
+    print(response_text[:1000])
+        
+    return response_text
